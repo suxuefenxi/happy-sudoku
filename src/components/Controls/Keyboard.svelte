@@ -7,21 +7,28 @@
 	// TODO: Improve keyboardDisabled
 	import { keyboardDisabled } from '@sudoku/stores/keyboard';
 
+	// 导入 makeMove 函数
+	import { makeMove } from '@sudoku/game';
+
 	function handleKeyButton(num) {
 		if (!$keyboardDisabled) {
+			// 调用 makeMove 保存状态
+			makeMove($cursor.x, $cursor.y, num);
 			if ($notes) {
 				if (num === 0) {
 					candidates.clear($cursor);
+					console.log('Cleared candidates at', $cursor);
 				} else {
 					candidates.add($cursor, num);
+					console.log('用户输入', num, '在', $cursor, '的候选项');
 				}
 				userGrid.set($cursor, 0);
 			} else {
 				if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
 					candidates.clear($cursor);
 				}
-
 				userGrid.set($cursor, num);
+				console.log('用户输入', num, '在', $cursor, '的值');
 			}
 		}
 	}
