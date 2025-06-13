@@ -11,6 +11,12 @@
 	import { undoMove, redoMove } from "@sudoku/game";
 	import { undoStack, redoStack } from "@sudoku/stores/undoRedo";
   
+	import { solveSudoku } from '@sudoku/sudoku';
+	import { grid } from '@sudoku/stores/grid';
+	import { get } from 'svelte/store';
+	import { manualInvalidCells } from '@sudoku/stores/grid';
+
+
 	let canUndo = false;
 	let canRedo = false;
   
@@ -21,14 +27,39 @@
 	$: hintsAvailable = $hints > 0;
   
 	function handleHint() {
-	  if (hintsAvailable) {
-		if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
-		  candidates.clear($cursor);
-		}
-  
-		userGrid.applyHint($cursor);
-	  }
-	}
+        const initialGrid = get(grid);
+		console.log('initialGrid:', initialGrid);
+        const usergrid = get(userGrid);
+		console.log('usergrid:', usergrid);
+        const solution = solveSudoku(initialGrid);
+		console.log('solution:', solution);
+        let allCorrect = true;
+        let errorCells = [];
+
+        for (let y = 0; y < usergrid.length; y++) {
+            for (let x = 0; x < usergrid[y].length; x++) {
+                if (usergrid[y][x] !== 0 && solution && usergrid[y][x] !== solution[y][x]) {
+                    allCorrect = false;
+                    errorCells.push(x + ',' + y);
+                }
+            }
+        }
+
+        if (!allCorrect) {
+            manualInvalidCells.set(errorCells); // 手动标红
+			alert('填写的数字部分有误，请关闭窗口后检查标红的数字！');
+            return;
+        } else {
+			manualInvalidCells.set([]); // 清空手动错误
+            if (hintsAvailable) {	
+			if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
+                candidates.clear($cursor);
+            }
+            userGrid.applyHint($cursor);
+        }
+        }
+    }
+
   </script>
   
   <div class="action-buttons space-x-3">

@@ -90,50 +90,59 @@ function createUserGrid() {
 
 export const userGrid = createUserGrid();
 
+export const manualInvalidCells = writable([]); // 新增手动标红逻辑
+// 自动移除用户已修改的手动标红，防止用户修改后仍然保留错误标记
+userGrid.subscribe($userGrid => {
+    manualInvalidCells.update(cells =>
+        cells.filter(xy => {
+            const [x, y] = xy.split(',').map(Number);
+            // 只保留当前格子还是错误（即非0），否则移除
+            return $userGrid[y][x] !== 0;
+        })
+    );
+});
+
+
+//这里是检查输入的数字是否有效，主要是检查行、列和小九宫格
 export const invalidCells = derived(
-  userGrid,
-  ($userGrid) => {
-    const _invalidCells = [];
+    [userGrid, manualInvalidCells],
+    ([$userGrid, $manualInvalidCells]) => {
+        // 合并自动冲突和手动错误
+        const _invalidCells = [];
 
-    const addInvalid = (x, y) => {
-      const xy = x + "," + y;
-      if (!_invalidCells.includes(xy)) _invalidCells.push(xy);
-    };
-
-    for (let y = 0; y < SUDOKU_SIZE; y++) {
-      for (let x = 0; x < SUDOKU_SIZE; x++) {
-        const value = $userGrid[y][x];
-
-        if (value) {
-          for (let i = 0; i < SUDOKU_SIZE; i++) {
-            // Check the row
-            if (i !== x && $userGrid[y][i] === value) {
-              addInvalid(x, y);
-            }
-
-            // Check the column
-            if (i !== y && $userGrid[i][x] === value) {
-              addInvalid(x, i);
-            }
-          }
-
-          // Check the box
-          const startY = Math.floor(y / BOX_SIZE) * BOX_SIZE;
-          const endY = startY + BOX_SIZE;
-          const startX = Math.floor(x / BOX_SIZE) * BOX_SIZE;
-          const endX = startX + BOX_SIZE;
-          for (let row = startY; row < endY; row++) {
-            for (let col = startX; col < endX; col++) {
-              if (row !== y && col !== x && $userGrid[row][col] === value) {
-                addInvalid(col, row);
-              }
-            }
-          }
+        const addInvalid = (x, y) => {
+            const xy = x + ',' + y;
+            if (!_invalidCells.includes(xy)) _invalidCells.push(xy);
+        };
+		for (let y = 0; y < SUDOKU_SIZE; y++) {
+            for (let x = 0; x < SUDOKU_SIZE; x++) {
+                const value = $userGrid[y][x];
+                if (value) {
+                    for (let i = 0; i < SUDOKU_SIZE; i++) {
+                        if (i !== x && $userGrid[y][i] === value) addInvalid(x, y);
+                        if (i !== y && $userGrid[i][x] === value) addInvalid(x, i);
+                    }
+                    const startY = Math.floor(y / BOX_SIZE) * BOX_SIZE;
+                    const endY = startY + BOX_SIZE;
+                    const startX = Math.floor(x / BOX_SIZE) * BOX_SIZE;
+                    const endX = startX + BOX_SIZE;
+                    for (let row = startY; row < endY; row++) {
+                        for (let col = startX; col < endX; col++) {
+                            if (row !== y && col !== x && $userGrid[row][col] === value) {
+                                addInvalid(col, row);
+                            }
+                        }
+                    }
+                }
+			}
         }
-      }
-    }
 
-    return _invalidCells;
-  },
-  []
+        // 合并手动错误
+        for (const xy of $manualInvalidCells) {
+            if (!_invalidCells.includes(xy)) _invalidCells.push(xy);
+        }
+
+        return _invalidCells;
+    },
+    []
 );
