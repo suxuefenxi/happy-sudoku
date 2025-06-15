@@ -39,6 +39,49 @@ export class SudokuBoard {
             }
         }
     }
+    
+    /**
+     * 检查在指定位置填入数字是否有效
+     * @param {number} row 行索引 (0-8)
+     * @param {number} col 列索引 (0-8)
+     * @param {number} num 要检查的数字 (1-9)
+     * @returns {boolean} 是否有效
+     */
+    isValid(row, col, num) {
+        // 检查数字是否在有效范围
+        if (num < 1 || num > 9) return false;
+
+        // 如果单元格已有数字，只有当数字相同时才有效（用于验证现有数字）
+        const currentValue = this.getCellValue(row, col);
+        if (currentValue !== 0 && currentValue !== num) return false;
+
+        // 检查行冲突（跳过当前单元格）
+        for (let c = 0; c < SIZE; c++) {
+            if (c !== col && this.getCellValue(row, c) === num) {
+                return false;
+            }
+        }
+
+        // 检查列冲突（跳过当前单元格）
+        for (let r = 0; r < SIZE; r++) {
+            if (r !== row && this.getCellValue(r, col) === num) {
+                return false;
+            }
+        }
+
+        // 检查3x3宫格冲突（跳过当前单元格）
+        const boxStartRow = Math.floor(row / BOX_SIZE) * BOX_SIZE;
+        const boxStartCol = Math.floor(col / BOX_SIZE) * BOX_SIZE;
+        for (let r = boxStartRow; r < boxStartRow + BOX_SIZE; r++) {
+            for (let c = boxStartCol; c < boxStartCol + BOX_SIZE; c++) {
+                if ((r !== row || c !== col) && this.getCellValue(r, c) === num) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     /**
      * @param {number} row
