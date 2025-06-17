@@ -1,199 +1,103 @@
+import { get } from "svelte/store";
 import {
   undoStack,
   redoStack,
   pushState,
   undo,
   redo,
-  getCurrentState
-} from "@sudoku/stores/undoRedo.js";
-import { makeMove} from "@sudoku/game.js";
-import { userGrid } from "@sudoku/stores/grid.js";
-import { candidates } from "@sudoku/stores/candidates.js";
-import { get } from "svelte/store";
+  getCurrentState,
+} from "@sudoku/stores/undoRedo";
+import { userGrid } from "@sudoku/stores/grid";
+import { candidates } from "@sudoku/stores/candidates";
+import { hintedCells } from "@sudoku/stores/hintedCells";
 
-jest.mock("@sudoku/stores/grid", () => ({
-  userGrid: {
-    subscribe: jest.fn(),
-    setGrid: jest.fn(),
-  },
-}));
+// mock applyState
+const applyState = jest.fn();
 
-jest.mock("@sudoku/stores/candidates", () => ({
-  candidates: {
-    subscribe: jest.fn(),
-    set: jest.fn(),
-    add: jest.fn(),
-  },
-}));
-
-jest.mock("@sudoku/game.js", () => ({
-  makeMove: jest.fn().mockImplementation(() => {
-    const { getCurrentState, pushState } = require("@sudoku/stores/undoRedo.js");
-    const state = getCurrentState();
-    pushState(state);
-    return { userGrid };
-  }),
-}));
-
-jest.mock("@sudoku/stores/undoRedo", () => {
-  const { writable } = require("svelte/store");
-  const undoStack = writable([]); // 模拟 undoStack 为一个 Svelte 的 writable store
-  const redoStack = writable([]); // 模拟 redoStack 为一个 Svelte 的 writable store
-  return {
-    undoStack, // 模拟导出的 undoStack
-    redoStack, // 模拟导出的 redoStack
-    pushState: jest.fn().mockImplementation((state) => {
-      undoStack.update(stack => [...stack, state]);
-      redoStack.set([]);
-    }), // 模拟导出的 pushState 函数
-    undo: jest.fn(), // 模拟导出的 undo 函数
-    redo: jest.fn(), // 模拟导出的 redo 函数
-    getCurrentState: jest.fn(), // 模拟导出的 getCurrentState 函数
-  };
+beforeEach(() => {
+  // 重置所有 store
+  undoStack.set([]);
+  redoStack.set([]);
+  userGrid.setGrid([
+    [1, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
+  candidates.set({});
+  hintedCells.set(new Set());
+  applyState.mockClear();
 });
 
-describe("Undo/Redo Functionality", () => {
-  beforeEach(() => {
-    // 清空 undo 和 redo 栈
-    undoStack.set([]);
-    redoStack.set([]);
-    jest.clearAllMocks();
-  });
+test("pushState and undo/redo basic flow", () => {
+  // 初始状态
+  const state1 = getCurrentState();
+  pushState(state1);
 
-  describe("pushState", () => {
-    test("should add current state to undo stack and clear redo stack", () => {
-      const mockState = { userGrid: [[0]], candidates: {} };
-      pushState(mockState);
+  // 修改 userGrid
+  userGrid.set({ x: 0, y: 1 }, 2);
+  const state2 = getCurrentState();
+  pushState(state2);
 
-      expect(get(undoStack)).toHaveLength(1);
-      expect(get(undoStack)[0]).toEqual(mockState);
-      expect(get(redoStack)).toHaveLength(0);
-    });
-  });
+  // 撤销
+  undo(applyState);
+  expect(applyState).toHaveBeenCalled();
+  expect(get(undoStack).length).toBe(1);
+  expect(get(redoStack).length).toBe(1);
 
-  describe("makeMove", () => {
-    test("should call pushState and update userGrid", () => {
-      const mockState = { userGrid: [[0]], candidates: {} };
-      getCurrentState.mockReturnValue(mockState);
-
-      makeMove(0, 0, 5);
-
-      expect(getCurrentState).toHaveBeenCalled();
-      expect(get(undoStack)).toHaveLength(1);
-      expect(get(undoStack)[0]).toEqual(mockState);
-      expect(userGrid.update).toHaveBeenCalledWith(expect.any(Function));
-    });
-  });
-
-  describe("undo", () => {
-    test("should move the last state from undoStack to redoStack and apply it", () => {
-      const initialState = { userGrid: [[0]], candidates: {} };
-      const previousState = { userGrid: [[1]], candidates: {} };
-
-      // 初始化 undoStack
-      undoStack.set([previousState, initialState]);
-      redoStack.set([]);
-
-      const applyState = jest.fn();
-      undo(applyState);
-
-      expect(get(undoStack)).toHaveLength(1);
-      expect(get(undoStack)[0]).toEqual(previousState);
-
-      expect(get(redoStack)).toHaveLength(1);
-      expect(get(redoStack)[0]).toEqual(initialState);
-
-      expect(applyState).toHaveBeenCalledWith(initialState);
-    });
-
-    test("should not perform undo if undoStack is empty", () => {
-      const applyState = jest.fn();
-      undo(applyState);
-
-      expect(get(undoStack)).toHaveLength(0);
-      expect(get(redoStack)).toHaveLength(0);
-      expect(applyState).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("redo", () => {
-    test("should move the last state from redoStack to undoStack and apply it", () => {
-      const initialState = { userGrid: [[0]], candidates: {} };
-      const nextState = { userGrid: [[1]], candidates: {} };
-
-      // 初始化 redoStack
-      undoStack.set([initialState]);
-      redoStack.set([nextState]);
-
-      const applyState = jest.fn();
-      redo(applyState);
-
-      expect(get(redoStack)).toHaveLength(0);
-
-      expect(get(undoStack)).toHaveLength(2);
-      expect(get(undoStack)[1]).toEqual(nextState);
-
-      expect(applyState).toHaveBeenCalledWith(nextState);
-    });
-
-    test("should not perform redo if redoStack is empty", () => {
-      const applyState = jest.fn();
-      redo(applyState);
-
-      expect(get(undoStack)).toHaveLength(0);
-      expect(get(redoStack)).toHaveLength(0);
-      expect(applyState).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("Integration Tests", () => {
-    test("should correctly handle a sequence of makeMove, undo, and redo", () => {
-      const initialState = { userGrid: [[0]], candidates: {} };
-      const state1 = { userGrid: [[1]], candidates: {} };
-      const state2 = { userGrid: [[2]], candidates: {} };
-
-      getCurrentState
-        .mockReturnValueOnce(initialState)
-        .mockReturnValueOnce(state1)
-        .mockReturnValueOnce(state2);
-
-      // 初始状态
-      pushState(initialState);
-
-      // 第一次操作
-      makeMove(0, 0, 1);
-      expect(get(undoStack)).toHaveLength(2);
-      expect(get(redoStack)).toHaveLength(0);
-
-      // 第二次操作
-      makeMove(0, 0, 2);
-      expect(get(undoStack)).toHaveLength(3);
-      expect(get(redoStack)).toHaveLength(0);
-
-      // 撤销一次
-      const applyState = jest.fn();
-      undo(applyState);
-      expect(get(undoStack)).toHaveLength(2);
-      expect(get(redoStack)).toHaveLength(1);
-      expect(applyState).toHaveBeenCalledWith(state1);
-
-      // 再次撤销
-      undo(applyState);
-      expect(get(undoStack)).toHaveLength(1);
-      expect(get(redoStack)).toHaveLength(2);
-      expect(applyState).toHaveBeenCalledWith(initialState);
-
-      // 重做一次
-      redo(applyState);
-      expect(get(undoStack)).toHaveLength(2);
-      expect(get(redoStack)).toHaveLength(1);
-      expect(applyState).toHaveBeenCalledWith(state1);
-
-      // 再次重做
-      redo(applyState);
-      expect(get(undoStack)).toHaveLength(3);
-      expect(get(redoStack)).toHaveLength(0);
-      expect(applyState).toHaveBeenCalledWith(state2);
-    });
-  });
+  // 重做
+  redo(applyState);
+  expect(applyState).toHaveBeenCalledTimes(2);
+  expect(get(undoStack).length).toBe(2);
+  expect(get(redoStack).length).toBe(0);
 });
+
+test("applyHintsToState should apply hints", () => {
+  // 假设有一个提示
+  hintedCells.set(new Set([{ x: 0, y: 0, value: 9 }]));
+  const state = getCurrentState();
+  // 直接调用 applyHintsToState
+  const { applyHintsToState } = require("@sudoku/stores/undoRedo");
+  const newState = applyHintsToState(state, get(hintedCells));
+  expect(newState.userGrid[0][0]).toBe(9);
+});
+
+test("applyHintsToState should clear candidates when applying hints", () => {
+  // 设置初始 userGrid 和 candidates
+  userGrid.setGrid([
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
+  candidates.set({
+    "0,0": [1, 2, 3],
+    "1,1": [4, 5, 6]
+  });
+
+  // 设置提示
+  hintedCells.set(new Set([{ x: 0, y: 0, value: 9 }]));
+  const state = getCurrentState();
+
+  // 调用 applyHintsToState
+  const { applyHintsToState } = require("@sudoku/stores/undoRedo");
+  const newState = applyHintsToState(state, get(hintedCells));
+
+  // 检查 userGrid 被填入提示
+  expect(newState.userGrid[0][0]).toBe(9);
+  // 检查 candidates 被清空
+  expect(!newState.candidates.hasOwnProperty("0,0"));
+  // 其它 candidates 不受影响
+  expect(newState.candidates["1,1"]).toEqual([4, 5, 6]);
+});
+

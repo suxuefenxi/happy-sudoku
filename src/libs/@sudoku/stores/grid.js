@@ -3,6 +3,7 @@ import { decodeSencode, encodeSudoku } from "@sudoku/sencode";
 import { generateSudoku, solveSudoku } from "@sudoku/sudoku";
 import { derived, writable } from "svelte/store";
 import { hints } from "@sudoku/stores/hints.js";
+import {redoStack} from "@sudoku/stores/undoRedo.js";
 
 function createGrid() {
   const grid = writable([
@@ -79,11 +80,15 @@ function createUserGrid() {
 
     applyHint: (pos) => {
       hints.useHint();
+      let result;
       userGrid.update(($userGrid) => {
         const solvedSudoku = solveSudoku($userGrid);
         $userGrid[pos.y][pos.x] = solvedSudoku[pos.y][pos.x];
+        result = {x: pos.x, y: pos.y, value: $userGrid[pos.y][pos.x]};
         return $userGrid;
       });
+      redoStack.set([]); // 清空重做栈
+      return result;
     },
   };
 }

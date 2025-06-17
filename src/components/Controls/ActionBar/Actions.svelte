@@ -15,7 +15,7 @@
 	import { grid } from '@sudoku/stores/grid';
 	import { get } from 'svelte/store';
 	import { manualInvalidCells } from '@sudoku/stores/grid';
-
+	import { hintedCells } from '@sudoku/stores/hintedCells';
 
 	let canUndo = false;
 	let canRedo = false;
@@ -28,11 +28,11 @@
   
 	function handleHint() {
         const initialGrid = get(grid);
-		console.log('initialGrid:', initialGrid);
+		//console.log('initialGrid:', initialGrid);
         const usergrid = get(userGrid);
-		console.log('usergrid:', usergrid);
+		//console.log('usergrid:', usergrid);
         const solution = solveSudoku(initialGrid);
-		console.log('solution:', solution);
+		//console.log('solution:', solution);
         let allCorrect = true;
         let errorCells = [];
 
@@ -52,11 +52,16 @@
         } else {
 			manualInvalidCells.set([]); // 清空手动错误
             if (hintsAvailable) {	
-			if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
-                candidates.clear($cursor);
-            }
-            userGrid.applyHint($cursor);
-        }
+				if ($candidates.hasOwnProperty($cursor.x + ',' + $cursor.y)) {
+					candidates.clear($cursor);
+				}
+				// 提示
+				const result = userGrid.applyHint($cursor);
+				hintedCells.update(set => {
+				set.add(result);
+				return set;
+				});
+			}
         }
     }
 
