@@ -1,5 +1,5 @@
-import { solveSudoku } from '../BruteForceSearch';
-import { SudokuBoard } from '../../SudokuBoard';
+import { solveSudoku } from '@sudoku/solver-lib/strategies/BruteForceSearch';
+import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard";
 
 describe('solveSudoku', () => {
   it('should solve a valid solvable Sudoku puzzle', () => {

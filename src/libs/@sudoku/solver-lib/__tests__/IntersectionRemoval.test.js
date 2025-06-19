@@ -1,7 +1,10 @@
 // src/sudoku-solver-lib/strategies/__tests__/intersectionRemoval.test.js
 
-import { SudokuBoard } from '../SudokuBoard.js';
-import { applyPointingReduction, applyBoxLineReduction } from '../strategies/IntersectionRemoval.js';
+import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard.js";
+import {
+  applyPointingReduction,
+  applyBoxLineReduction,
+} from "@sudoku/solver-lib/strategies/IntersectionRemoval.js";
 
 describe('Intersection Removal Strategies', () => {
 
