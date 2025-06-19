@@ -1,5 +1,4 @@
 import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard.js";
-import { eliminateCandidates } from "@sudoku/solver-lib/strategies/eliminateCandidates.js";
 
 describe("eliminateCandidates", () => {
   let board;
@@ -20,9 +19,6 @@ describe("eliminateCandidates", () => {
   });
 
   test("should eliminate candidates based on filled values", () => {
-    // 执行候选值消除
-    eliminateCandidates(board);
-
     // 验证同行、同列、同块的候选值是否正确消除
     expect(board.getCandidates(0, 1)).not.toContain(2); // 同行消除
     expect(board.getCandidates(1, 0)).not.toContain(2); // 同列消除
