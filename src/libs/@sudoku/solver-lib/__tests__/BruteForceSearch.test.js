@@ -1,4 +1,4 @@
-import { solveSudoku } from '../brute-force search';
+import { solveSudoku } from '../BruteForceSearch';
 import { SudokuBoard } from '../../SudokuBoard';
 
 describe('solveSudoku', () => {

@@ -2,7 +2,6 @@ import { NakedPairStrategy } from '@sudoku/solver-lib/strategies/NakedPairStrate
 import { NakedTripleStrategy } from "@sudoku/solver-lib/strategies/NakedTripleStrategy.js";
 import { NakedQuadStrategy } from "@sudoku/solver-lib/strategies/NakedQuadStrategy.js";
 import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard.js";
-import { eliminateCandidates } from '@sudoku/solver-lib/strategies/eliminateCandidates';
 import { HiddenSingleStrategy } from '@sudoku/solver-lib/strategies/HiddenSingleStrategy.js';
 import solve from "@mattflow/sudoku-solver";
 
@@ -24,7 +23,6 @@ describe('NakedSubsetStrategy', () => {
     const strategy = new NakedPairStrategy();
     console.log(board.getCandidates(2, 8));
     console.log(board.getCandidates(2, 5));
-    eliminateCandidates(board);
     const result = strategy.apply(board);
     console.log(board.getCandidates(2, 8));
     console.log(board.getCandidates(2, 5));
@@ -78,7 +76,6 @@ describe('NakedSubsetStrategy', () => {
     const strategy = new NakedTripleStrategy();
     console.log(board.getCandidates(4, 6));
     console.log(board.getCandidates(4, 2));
-    eliminateCandidates(board);
     const result = strategy.apply(board);
     console.log(board.getCandidates(4, 6));
     console.log(board.getCandidates(4, 2));
@@ -108,7 +105,6 @@ describe('NakedSubsetStrategy', () => {
     const strategy = new NakedQuadStrategy();
     console.log(board.getCandidates(0, 0));
     console.log(board.getCandidates(0, 1));
-    eliminateCandidates(board);
     const result = strategy.apply(board);
     console.log(board.getCandidates(0, 0));
     console.log(board.getCandidates(0, 1));

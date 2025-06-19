@@ -1,6 +1,5 @@
 import { HiddenSingleStrategy } from "@sudoku/solver-lib/strategies/HiddenSingleStrategy.js";
 import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard.js";
-import { eliminateCandidates } from "@sudoku/solver-lib/strategies/eliminateCandidates.js";
 import solve from "@mattflow/sudoku-solver";
 
 describe("HiddenSingleStrategy", () => {
@@ -23,7 +22,6 @@ describe("HiddenSingleStrategy", () => {
 
   test("HiddenSingleStrategy should find and apply hidden singles", () => {
     const strategy = new HiddenSingleStrategy();
-    eliminateCandidates(board);
 
     const result = strategy.apply(board);
     // console.log(result);
