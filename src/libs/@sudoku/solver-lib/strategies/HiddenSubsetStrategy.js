@@ -56,41 +56,55 @@ export class HiddenSubsetStrategy extends Strategy {
     // 获取单元中所有空单元格
     const emptyCells = unitCells.filter((cell) => cell.value === 0);
 
+    let nums = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    for (const cell of unitCells) {
+      if (cell.value !== 0) {
+        nums.delete(cell.value);
+      }
+    }
+
     // 获取所有候选数字组合
     const candidateCombinations = this._getCandidateCombinations(
+      nums,
       this.subsetSize
     );
+
+    if (candidateCombinations.length === 0) {
+      return false; // 没有足够的候选数字组合
+    }
 
     let modified = false;
 
     for (const combination of candidateCombinations) {
       // 找到包含当前候选组合的单元格
-      const matchingCells = emptyCells.filter((cell) => {
-        const candidates = cell.getCandidates();
-        return (
-          combination.every((num) => candidates.includes(num)) &&
-            candidates.length >= this.subsetSize
-        );
-      });
-
-      // 如果找到的单元格数量与子集大小相等
-      if (matchingCells.length === this.subsetSize) {
-        // 移除这些单元格中不属于子集的候选数字
-        for (const cell of matchingCells) {
-          cell.candidates = combination;
+      let cellSet = new Set();
+      for (const num of combination) {
+        for (const cell of emptyCells) {
+          if (cell.candidates.has(num)) {
+            cellSet.add(cell);
+          }
         }
+      }
 
+      if (cellSet.size === this.subsetSize) {
+        for (const cell of cellSet) {
+          board.candidates[cell.row][cell.col] = new Set(
+            Array.from(cell.candidates).filter((num) =>
+              combination.includes(num)
+            )
+          );
+        }
         modified = true;
 
         // 记录步骤
         let effect = {
           type: "removeCandidates",
-          cells: matchingCells.map((cell) => ({
+          cells: Array.from(cellSet).map((cell) => ({
             row: cell.row,
             col: cell.col,
             candidates: Array.from(cell.candidates),
           })),
-        };  
+        };
         allSteps.push(
           new Step(
             `Hidden Subset (${this.subsetSize}) in ${unitName}`,
@@ -105,8 +119,9 @@ export class HiddenSubsetStrategy extends Strategy {
   }
 
   // Helper for combinations of numbers (1-9)
-  _getCandidateCombinations(k) {
-    const candidates = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  _getCandidateCombinations(nums, k) {
+    const candidates = nums;
+    if (candidates.length < k) return [];
 
     function combine(arr, k) {
       if (k === 0) return [[]];
