@@ -1,28 +1,42 @@
-import { getCurrentState, pushState, applyHintsToState, undoStack, redoStack } from "./stores/undoRedo"; 
+import { getCurrentState, pushState, undoStack, redoStack } from "./stores/undoRedo";
 import { get, writable } from "svelte/store";
-import { userGrid } from "./stores/grid"; // 引入 userGrid store
+import { userGrid } from "./stores/grid";
 import { candidates } from "./stores/candidates";
-import { hintedCells } from "./stores/hintedCells";
 
-export const backtrackStack = writable([]); // 用于存储回溯栈
-export let count = 0; // 用于计数
+export const backtrackStack = writable([]); // 存储回溯状态栈
 
+// 创建分支（用户点击候选数字时调用）
 export function createBranch(x, y, value) {
-    const currentCandidates = get(candidates);
-    const currentUserGrid = get(userGrid);
-    const currentState = getCurrentState();
-    backtrackStack.update((stack) => [...stack, currentState]);
-    console.log(currentState);
-    userGrid.set({ x: x, y: y }, value);
-    console.log(currentCandidates);
-    console.log(currentCandidates[`${x},${y}`]);
-    delete currentCandidates[`${x},${y}`];
-    console.log(getCurrentState());
-    undoStack.set([]); // 清空撤销栈
-    redoStack.set([]); // 清空重做栈
-    count++;
+  // 获取当前完整状态（包括userGrid和candidates）
+  const currentState = getCurrentState();
+
+  // 保存到回溯栈
+  backtrackStack.update((stack) => [...stack, currentState]);
+
+  // 更新userGrid（设置选中候选值为当前格子值）
+  userGrid.set({ x, y }, value);
+
+  // 更新candidates（移除当前格子的候选数字）
+  const currentCandidates = get(candidates);
+  const newCandidates = { ...currentCandidates };
+  delete newCandidates[`${x},${y}`];
+  candidates.set(newCandidates); // 使用set方法更新整个candidates状态
+
+  // 清空撤销/重做栈（避免状态混乱）
+  undoStack.set([]);
+  redoStack.set([]);
 }
 
+// 回溯到上一个分支状态
 export function backtrace() {
-    
+  backtrackStack.update((stack) => {
+    if (stack.length === 0) return stack; // 栈空时忽略
+
+    const lastState = stack[stack.length - 1];
+    // 恢复userGrid和candidates
+    userGrid.setGrid(lastState.userGrid);
+    candidates.set(lastState.candidates); // 使用set方法
+
+    return stack.slice(0, -1); // 弹出栈顶
+  });
 }

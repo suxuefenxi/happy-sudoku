@@ -10,6 +10,7 @@
   
 	import { undoMove, redoMove } from "@sudoku/game";
 	import { undoStack, redoStack } from "@sudoku/stores/undoRedo";
+	import {backtrackStack, backtrace} from '@sudoku/backtrace.js';
   
 	import { solveSudoku } from '@sudoku/sudoku';
 	import { grid } from '@sudoku/stores/grid';
@@ -23,7 +24,8 @@
 	// 订阅撤销和重做栈的变化
 	$: canUndo = $undoStack.length > 0;
 	$: canRedo = $redoStack.length > 0;
-  
+	$: backtraceAvailable = $backtrackStack.length > 0;
+	$: backtraceCount = $backtrackStack.length;
 	$: hintsAvailable = $hints > 0;
   
 	function handleHint() {
@@ -68,6 +70,24 @@
   </script>
   
   <div class="action-buttons space-x-3">
+	<!-- 新增回溯按钮 -->
+	<button
+		class="btn btn-round btn-badge"
+		disabled={!backtraceAvailable || $gamePaused}
+		on:click={backtrace}
+		title="Backtrace"
+	>
+		<!-- 使用类似第二张图片的图标（这里用返回箭头图标） -->
+		<svg class="icon-outline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+			<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z" />
+		</svg>
+		
+		<!-- 显示回溯次数（类似第二张图片的样式） -->
+		<span class="badge" class:badge-primary={backtraceAvailable}>
+		{backtraceCount}
+		</span>
+	</button>
+
 	<!-- Undo 按钮 -->
 	<button
 	  class="btn btn-round"
