@@ -216,7 +216,7 @@ function createUserGrid() {
             candidates: possibleResult.candidates,
             description: possibleResult.description,
             type: 'showPossible'
-          };
+  };
         } else {
           // 如果策略失败，使用存储的解答
           const $solution = get(solution);

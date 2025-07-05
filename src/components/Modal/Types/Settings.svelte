@@ -40,12 +40,3 @@
 	<button class="btn btn-small btn-primary" on:click={handleSave}>Save</button>
 </div>
 
-<style>
-	.number-input {
-		@apply w-12 h-8 px-1 border-2 rounded-lg shadow-inner text-xl text-center leading-none;
-	}
-
-	.number-input:focus {
-		@apply outline-none shadow-outline;
-	}
-</style>

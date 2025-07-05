@@ -13,7 +13,7 @@
 	}
 </script>
 
-{#if $modal !== MODAL_NONE}
+{#if $modal !== MODAL_NONE && $modal !== 'errormodal'}
 	<div class="modal">
 		<button transition:fade={{duration: MODAL_DURATION}} class="modal-overlay" on:click={handleOverlayClick} tabindex="-1"></button>
 

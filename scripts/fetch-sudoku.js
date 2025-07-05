@@ -1,27 +1,27 @@
-const puppeteer = require('puppeteer');
+const { chromium } = require('playwright');
 
 async function fetchSudoku(url) {
-  const browser = await puppeteer.launch();
+  const browser = await chromium.launch();
   const page = await browser.newPage();
 
   try {
-    await page.setUserAgent(
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    );
+    // 设置用户代理
+    await page.setExtraHTTPHeaders({
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    });
 
-    await page.goto(url, { waitUntil: 'networkidle2' });
+    await page.goto(url, { waitUntil: 'networkidle' });
     await page.waitForSelector('iframe#ASSudoku', { timeout: 15000 });
 
     // 获取 iframe 元素
-    const elementHandle = await page.$('iframe#ASSudoku');
-    const frame = await elementHandle.contentFrame();
+    const frame = page.frameLocator('iframe#ASSudoku').first();
 
     if (!frame) {
       throw new Error('找不到 ASSudoku iframe 的内容');
     }
 
     // 等待 boardtable 渲染
-    await frame.waitForSelector('#boardtable', { timeout: 15000 });
+    await frame.locator('#boardtable').waitFor({ timeout: 15000 });
 
     const puzzle = await frame.evaluate(() => {
       const result = [];

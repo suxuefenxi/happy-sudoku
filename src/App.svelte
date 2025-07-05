@@ -8,6 +8,8 @@
 	import Controls from './components/Controls/index.svelte';
 	import Header from './components/Header/index.svelte';
 	import Modal from './components/Modal/index.svelte';
+	import ErrorToast from './components/Utils/ErrorToast.svelte';
+	import HintStrategyToast from './components/Utils/HintStrategyToast.svelte';
 
 	gameWon.subscribe(won => {
 		if (won) {
@@ -48,6 +50,8 @@
 </footer>
 
 <Modal />
+<ErrorToast />
+<HintStrategyToast />
 
 <style global>
 	@import "./styles/global.css";

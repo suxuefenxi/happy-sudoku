@@ -41,12 +41,12 @@
         let errorCells = [];
 
         if ($solution) {
-            for (let y = 0; y < usergrid.length; y++) {
-                for (let x = 0; x < usergrid[y].length; x++) {
+        for (let y = 0; y < usergrid.length; y++) {
+            for (let x = 0; x < usergrid[y].length; x++) {
                     if (usergrid[y][x] !== 0 && usergrid[y][x] !== $solution.getCellValue(y, x)) {
-                        allCorrect = false;
-                        errorCells.push(x + ',' + y);
-                    }
+                    allCorrect = false;
+                    errorCells.push(x + ',' + y);
+                }
                 }
             }
         } else {
@@ -71,7 +71,7 @@
         if (!allCorrect) {
             manualInvalidCells.set(errorCells); // 手动标红
 			modal.show('errormodal');
-            lastHintStrategy.clear();
+            lastHintStrategy.set('');
             return;
         } else {
 			manualInvalidCells.set([]); // 清空手动错误
@@ -88,15 +88,15 @@
 				} else if (result.type === 'fallback') {
 					lastHintStrategy.set('回退解答');
 				} else {
-					lastHintStrategy.clear();
+					lastHintStrategy.set('');
 				}
 				console.log('lastHintStrategy set to:', $lastHintStrategy);
 				// 高亮提示的格子
 				cursor.set(result.x, result.y);
 			} else {
-				lastHintStrategy.clear();
+				lastHintStrategy.set('');
 				console.log('lastHintStrategy cleared');
-			}
+				}
         }
     }
 
@@ -163,7 +163,7 @@
                 candidates.set({ [`${result.x},${result.y}`]: result.candidates });
             } else {
                 alert('无法获取候选值');
-            }
+			}
         }
     }
 
@@ -251,11 +251,7 @@
 	</button>
   </div>
   
-  {#if $lastHintStrategy}
-    <div class="hint-strategy-banner">
-      本次提示策略：{$lastHintStrategy}
-    </div>
-  {/if}
+
   
   <style>
 	.action-buttons {
@@ -276,9 +272,5 @@
 	  @apply bg-primary;
 	}
 
-	.hint-strategy-banner {
-	  @apply mt-4 mb-2 px-4 py-2 rounded-lg shadow text-center text-lg font-bold text-primary;
-	  background-color: rgba(59, 130, 246, 0.1);
-	  letter-spacing: 0.05em;
-	}
+
   </style>

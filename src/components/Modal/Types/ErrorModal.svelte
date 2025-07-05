@@ -1,5 +1,4 @@
 <script>
-	export let data = {};
 	export let hideModal;
 </script>
 
