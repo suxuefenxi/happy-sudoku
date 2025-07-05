@@ -8,6 +8,7 @@ import { getHintOrBruteForce, showPossible } from "@sudoku/solver-lib/strategies
 import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard.js";
 import { solveSudoku as bruteForceSolve } from "@sudoku/solver-lib/strategies/BruteForceSearch.js";
 import { addUserInput } from "@sudoku/stores/userInputs.js";
+import { candidates } from "@sudoku/stores/candidates.js";
 
 
 function createGrid() {
@@ -193,6 +194,9 @@ function createUserGrid() {
           $userGrid[result.y][result.x] = result.value;
           return $userGrid;
         });
+        
+        // 清除所有显示的候选值，避免与提示冲突
+        candidates.set({});
       }
       
       redoStack.set([]); // 清空重做栈
