@@ -1,18 +1,21 @@
 <script>
 	import { BOX_SIZE } from '@sudoku/constants';
 	import { gamePaused } from '@sudoku/stores/game';
-	import { grid, userGrid, invalidCells } from '@sudoku/stores/grid';
+	import { grid, userGrid, invalidCells, solution } from '@sudoku/stores/grid';
 	import { settings } from '@sudoku/stores/settings';
 	import { cursor } from '@sudoku/stores/cursor';
 	import { candidates } from '@sudoku/stores/candidates';
+	import { userInputs } from '@sudoku/stores/userInputs';
+
 	import Cell from './Cell.svelte';
 
 	function isSelected(cursorStore, x, y) {
+		if (cursorStore.x === null || cursorStore.y === null) return false;
 		return cursorStore.x === x && cursorStore.y === y;
 	}
 
 	function isSameArea(cursorStore, x, y) {
-		if (cursorStore.x === null && cursorStore.y === null) return false;
+		if (cursorStore.x === null || cursorStore.y === null) return false;
 		if (cursorStore.x === x || cursorStore.y === y) return true;
 
 		const cursorBoxX = Math.floor(cursorStore.x / BOX_SIZE);
@@ -23,10 +26,23 @@
 	}
 
 	function getValueAtCursor(gridStore, cursorStore) {
-		if (cursorStore.x === null && cursorStore.y === null) return null;
+		if (cursorStore.x === null || cursorStore.y === null) return null;
 
 		return gridStore[cursorStore.y][cursorStore.x];
 	}
+
+	function isUserInput(userInputsStore, x, y) {
+		return userInputsStore.has(`${x},${y}`);
+	}
+
+	function isWrongAnswer(solutionStore, userGridStore, x, y) {
+		if (!solutionStore) return false;
+		const userValue = userGridStore[y][x];
+		const correctValue = solutionStore.getCellValue(y, x);
+		return userValue !== 0 && userValue !== correctValue;
+	}
+
+
 </script>
 
 <div class="board-padding relative z-10">
@@ -45,10 +61,12 @@
 					      candidates={$candidates[x + ',' + y]}
 					      disabled={$gamePaused}
 					      selected={isSelected($cursor, x, y)}
-					      userNumber={$grid[y][x] === 0}
+					      userNumber={$grid[y][x] === 0 && value !== 0 && isUserInput($userInputs, x, y)}
+					      hintNumber={$grid[y][x] === 0 && value !== 0 && !isUserInput($userInputs, x, y)}
 					      sameArea={$settings.highlightCells && !isSelected($cursor, x, y) && isSameArea($cursor, x, y)}
 					      sameNumber={$settings.highlightSame && value && !isSelected($cursor, x, y) && getValueAtCursor($userGrid, $cursor) === value}
-					      conflictingNumber={$settings.highlightConflicting && $grid[y][x] === 0 && $invalidCells.includes(x + ',' + y)} />
+					      conflictingNumber={isWrongAnswer($solution, $userGrid, x, y)}
+					      />
 				{/each}
 			{/each}
 

@@ -11,8 +11,8 @@ export const DIFFICULTIES = {
 export const DEFAULT_SETTINGS = {
 	darkTheme:            false,
 	displayTimer:         true,
-	hintsLimited:         true,
-	hints:                5,
+	hintsLimited:         false,
+	hints:                Infinity,
 	highlightCells:       true,
 	highlightSame:        true,
 	highlightConflicting: true,

@@ -1,5 +1,5 @@
 import { SudokuBoard } from "../SudokuBoard.js";
-import { eliminateCandidates } from "./eliminateCandidates.js";
+
 
 /**
  * 找到候选者只有一个的单元格并返回。
@@ -22,11 +22,14 @@ export function findSingleCandidate(board) {
 
         // 确定该单元格的值并更新候选值
         board.setCellValue(row, col, value);
-        eliminateCandidates(board, row, col, value);
         modified = true;
+        break
       }
     }
-  }
+    if (modified) {
+      break;
+    }
+  } 
 
   return { modified, steps };
 }

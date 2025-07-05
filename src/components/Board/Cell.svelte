@@ -12,14 +12,21 @@
 	export let disabled;
 	export let conflictingNumber;
 	export let userNumber;
+	export let hintNumber;
 	export let selected;
 	export let sameArea;
 	export let sameNumber;
+
 
 	const borderRight = (cellX !== SUDOKU_SIZE && cellX % 3 !== 0);
 	const borderRightBold = (cellX !== SUDOKU_SIZE && cellX % 3 === 0);
 	const borderBottom = (cellY !== SUDOKU_SIZE && cellY % 3 !== 0);
 	const borderBottomBold = (cellY !== SUDOKU_SIZE && cellY % 3 === 0);
+
+	function handleCellClick() {
+		// 设置光标位置
+		cursor.set(cellX - 1, cellY - 1);
+	}
 </script>
 
 <div class="cell row-start-{cellY} col-start-{cellX}"
@@ -31,12 +38,14 @@
 	{#if !disabled}
 		<div class="cell-inner"
 		     class:user-number={userNumber}
+		     class:hint-number={hintNumber}
 		     class:selected={selected}
 		     class:same-area={sameArea}
 		     class:same-number={sameNumber}
-		     class:conflicting-number={conflictingNumber}>
+		     class:conflicting-number={conflictingNumber}
+		     >
 
-			<button class="cell-btn" on:click={cursor.set(cellX - 1, cellY - 1)}>
+			<button class="cell-btn" on:click={handleCellClick}>
 				{#if candidates}
 					<Candidates {candidates} x={cellX - 1} y={cellY - 1}/>
 				{:else}
@@ -101,7 +110,11 @@
 	}
 
 	.user-number {
-		@apply text-primary;
+		@apply text-blue-600;
+	}
+
+	.hint-number {
+		@apply text-green-600;
 	}
 
 	.selected {
@@ -119,4 +132,6 @@
 	.conflicting-number {
 		@apply text-red-600;
 	}
+
+
 </style>

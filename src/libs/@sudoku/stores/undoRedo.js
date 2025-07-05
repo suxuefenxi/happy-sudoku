@@ -1,7 +1,6 @@
 import { get, writable } from "svelte/store";
 import { userGrid } from "./grid"; // 引入 userGrid store
 import { candidates } from "./candidates"; // 引入 candidates store
-import { hintedCells } from "./hintedCells";
 export const undoStack = writable([]); // 用于存储历史状态
 export const redoStack = writable([]); // 用于存储重做状态
 
@@ -32,26 +31,8 @@ export function pushState(currentState) {
 }
 
 export function applyHintsToState(snapShot, hintedSet) {
-  //console.log("Applying hints to state:", snapShot, hintedSet);
-  for (let y = 0; y < snapShot.userGrid.length; y++) {
-    for (let x = 0; x < snapShot.userGrid[y].length; x++) {
-      for (const cell of hintedSet) {
-        //console.log(hintedSet[i].x, hintedSet[i].y, x, y);
-        if (cell.y === y && cell.x === x) {
-          //console.log(`Applying hint to cell (${x}, ${y}):`, cell.value);
-          // 如果当前单元格在提示集合中，使用提示集合中的值
-          snapShot.userGrid[y][x] = cell.value;
-          const key = `${x},${y}`;
-          if (snapShot.candidates.hasOwnProperty(key)) {
-            delete snapShot.candidates[key];
-          }
-          break; // 找到匹配后跳出循环
-        }
-      }
-    }
-  }
-  //console.log("After applying hints, the snapShot: ", snapShot);
-  return snapShot; // 返回合并后的状态
+  // 由于已经移除了 hintedCells 功能，这个函数现在只是返回原始状态
+  return snapShot;
 }
 
 /**
@@ -74,8 +55,7 @@ export function undo(applyState) {
     });
 
     let snapShot = JSON.parse(JSON.stringify(stack[stack.length - 1])); // 获取最后一个状态快照
-    const hintedSet = get(hintedCells); // 获取当前的提示单元格集合
-    const mergedState = applyHintsToState(snapShot, hintedSet); // 合并状态
+    const mergedState = applyHintsToState(snapShot, new Set()); // 合并状态
     applyState(mergedState); // 应用撤销的状态
     const newStack = stack.slice(0, -1); // 移除最后一个状态
     //console.log("After undo, the new stack: ", newStack);
@@ -103,8 +83,7 @@ export function redo(applyState) {
     });
 
     let snapShot = JSON.parse(JSON.stringify(stack[stack.length - 1])); // 获取最后一个状态快照
-    const hintedSet = get(hintedCells); // 获取当前的提示单元格集合
-    const mergedState = applyHintsToState(snapShot, hintedSet); // 合并状态
+    const mergedState = applyHintsToState(snapShot, new Set()); // 合并状态
     applyState(mergedState); // 应用重做的状态
     const newStack = stack.slice(0, -1); // 移除最后一个状态
     //console.log("After redo, the new stack: ", newStack);

@@ -9,7 +9,6 @@ import {
 } from "@sudoku/stores/undoRedo";
 import { userGrid } from "@sudoku/stores/grid";
 import { candidates } from "@sudoku/stores/candidates";
-import { hintedCells } from "@sudoku/stores/hintedCells";
 
 // mock applyState
 const applyState = jest.fn();
@@ -30,7 +29,6 @@ beforeEach(() => {
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
   ]);
   candidates.set({});
-  hintedCells.set(new Set());
   applyState.mockClear();
 });
 
@@ -57,17 +55,15 @@ test("pushState and undo/redo basic flow", () => {
   expect(get(redoStack).length).toBe(0);
 });
 
-test("applyHintsToState should apply hints", () => {
-  // 假设有一个提示
-  hintedCells.set(new Set([{ x: 0, y: 0, value: 9 }]));
+test("applyHintsToState should return original state", () => {
   const state = getCurrentState();
   // 直接调用 applyHintsToState
   const { applyHintsToState } = require("@sudoku/stores/undoRedo");
-  const newState = applyHintsToState(state, get(hintedCells));
-  expect(newState.userGrid[0][0]).toBe(9);
+  const newState = applyHintsToState(state, new Set());
+  expect(newState.userGrid).toEqual(state.userGrid);
 });
 
-test("applyHintsToState should clear candidates when applying hints", () => {
+test("applyHintsToState should preserve candidates", () => {
   // 设置初始 userGrid 和 candidates
   userGrid.setGrid([
     [0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -85,19 +81,15 @@ test("applyHintsToState should clear candidates when applying hints", () => {
     "1,1": [4, 5, 6]
   });
 
-  // 设置提示
-  hintedCells.set(new Set([{ x: 0, y: 0, value: 9 }]));
   const state = getCurrentState();
 
   // 调用 applyHintsToState
   const { applyHintsToState } = require("@sudoku/stores/undoRedo");
-  const newState = applyHintsToState(state, get(hintedCells));
+  const newState = applyHintsToState(state, new Set());
 
-  // 检查 userGrid 被填入提示
-  expect(newState.userGrid[0][0]).toBe(9);
-  // 检查 candidates 被清空
-  expect(!newState.candidates.hasOwnProperty("0,0"));
-  // 其它 candidates 不受影响
-  expect(newState.candidates["1,1"]).toEqual([4, 5, 6]);
+  // 检查 userGrid 保持不变
+  expect(newState.userGrid).toEqual(state.userGrid);
+  // 检查 candidates 保持不变
+  expect(newState.candidates).toEqual(state.candidates);
 });
 
