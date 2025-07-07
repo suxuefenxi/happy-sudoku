@@ -1,10 +1,15 @@
-# [sudoku](https://sudoku.jonasgeiler.com)
+# [sudoku](https://happy-sudoku.netlify.app/)
 
-This is a very simple sudoku game built with Svelte and TailwindCSS.
+这是一个用 Svelte 和 TailwindCSS 构建的简易数独游戏。
 
-Have fun! 😉
+祝您游戏愉快！😉
 
-> [!WARNING]
-> Unfortunately not all features are done yet. Specifically:
-> - Undoing/redoing moves
-> - Creating your own sudoku games
+## 项目功能
+
+- 支持数独游戏的基本玩法
+- 支持撤销/重做操作
+- 支持自定义创建数独题目
+- 响应式界面，适配多种设备
+- 友好的用户交互体验
+- 支持多种难度选择
+- 提供自动求解和提示功能

@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - main
 
 permissions:
   contents: write
@@ -30,6 +30,9 @@ jobs:
 
       - name: CNAME 🧾
         run: echo sudoku.jonasgeiler.com > dist/CNAME
+
+      - name: 运行测试
+        run: npm test
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.6.1
