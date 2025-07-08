@@ -7,7 +7,8 @@
 		"postbuild": "node scripts/postbuild.js",
 		"predev": "rimraf dist",
 		"dev": "rollup -c -w",
-		"start": "sirv dist",
+		"serve": "sirv dist",
+		"start": "node scripts/fetch-sudoku-server.js",
 		"test": "jest"
 	},
 	"imports": {
