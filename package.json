@@ -49,6 +49,7 @@
 		"express": "^5.1.0",
 		"fake-sudoku-puzzle-generator": "1.2.1",
 		"playwright": "^1.40.0",
+		"playwright-chromium": "^1.42.1",
 		"sirv-cli": "1.0.0",
 		"tailwindcss": "1.9.6"
 	}
