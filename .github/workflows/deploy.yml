@@ -3,7 +3,7 @@ name: Deploy
 on:
   push:
     branches:
-      - master
+      - main
 
 permissions:
   contents: write
@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2
-        with:
-          persist-credentials: false
+        uses: actions/checkout@v4
 
       - name: Setup 🔧
-        uses: actions/setup-node@v1.4.4
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
 
       - name: Install ♻
         run: npm install
@@ -29,7 +29,10 @@ jobs:
         run: npm run build
 
       - name: CNAME 🧾
-        run: echo sudoku.jonasgeiler.com > dist/CNAME
+        run: echo happy-sudoku.LLL.com > dist/CNAME
+
+      - name: 运行测试
+        run: npm test
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.6.1
