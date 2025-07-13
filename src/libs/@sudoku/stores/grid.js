@@ -9,6 +9,7 @@ import { SudokuBoard } from "@sudoku/solver-lib/SudokuBoard.js";
 import { solveSudoku as bruteForceSolve } from "@sudoku/solver-lib/strategies/BruteForceSearch.js";
 import { addUserInput } from "@sudoku/stores/userInputs.js";
 import { candidates } from "@sudoku/stores/candidates.js";
+import { hintedCells } from "@sudoku/stores/hintedCells.js";
 
 
 function createGrid() {
@@ -121,6 +122,12 @@ function createUserGrid() {
         
         // 使用智能提示策略
         const hintResult = getHintOrBruteForce(board);
+        const curHint = { x: hintResult.col, y: hintResult.row, value: hintResult.value };
+        hintedCells.update((set) => {
+          set.add(curHint);
+          return set;
+        });
+
         
         if (hintResult) {
           if (hintResult.type === 'hint') {
