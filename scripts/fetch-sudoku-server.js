@@ -1,7 +1,7 @@
 // server.js
-const express = require('express');
-const { chromium } = require('playwright');
-const cors = require('cors');
+import express from 'express';
+import { chromium } from 'playwright';
+import cors from 'cors';
 
 const app = express();
 app.use(cors()); // 允许跨域，Svelte 可以调用
